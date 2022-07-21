@@ -45,6 +45,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions">
+      <HintPath>..\..\API\API\bin\Microsoft.AspNetCore.Mvc.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -221,13 +224,9 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GTIMVC.BL\GTIMVC.BL.csproj">
-      <Project>{afcf0e27-bc02-4a87-890e-bc12520fdeaf}</Project>
-      <Name>GTIMVC.BL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GTIMVC.MODEL\GTIMVC.Model.csproj">
-      <Project>{fe1f727f-9c33-4ced-a1c6-621aaab626c2}</Project>
-      <Name>GTIMVC.Model</Name>
+    <ProjectReference Include="..\GTEI.Model\GTI.Model.csproj">
+      <Project>{35E865B5-DE52-4CF2-8113-3424B142E514}</Project>
+      <Name>GTI.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

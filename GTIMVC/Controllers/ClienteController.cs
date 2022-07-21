@@ -1,8 +1,13 @@
-﻿using GTIMVC.BL;
-using GTIMVC.MODEL;
+﻿using GTI.API.Models;
+ 
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -11,80 +16,97 @@ namespace GTIMVC.Controllers
     public class ClienteController : Controller
     {
         // GET: Cliente
-
+        private readonly string apiUrl = "http://localhost:55812/api/cliente";
         public ActionResult Home()
         {
 
             return View();
         }
-        public ActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            ClienteBL clienteBL = new ClienteBL();
-            List<Cliente> clientes =  clienteBL.Listar();
+            List<Cliente> listaClientes = new List<Cliente>();
 
-            return View(clientes); 
-        }
-
-         public ActionResult Form()
-        {
-            ClienteBL clienteBL = new ClienteBL();
-            var clientes = clienteBL.Listar();
-
-            return View(clientes);
-        }
-
-        public ActionResult FormAlterar(int id)
-        {
-            ClienteBL clienteBL = new ClienteBL();
-            var clientes = clienteBL.Obter(id);
-
-            return View(clientes);
-        }
-
-        public ActionResult FormExcluir(int id)
-        {
-            ClienteBL clienteBL = new ClienteBL();
-            var clientes = clienteBL.Obter(id);
-            return View(clientes);
+            using (var httpClient = new HttpClient())
+            {
+                using (var response = await httpClient.GetAsync(apiUrl))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    listaClientes = JsonConvert.DeserializeObject<List<Cliente>>(apiResponse);
+                }
+            }
+            return (IActionResult)View(listaClientes);
         }
 
         [HttpPost]
-        public ActionResult Adicionar(Cliente cliente)
+        public async Task<IActionResult> GetCliente(int id)
         {
-            ClienteBL clienteBL = new ClienteBL();
-            clienteBL.Inserir(cliente);
+            Cliente cliente = new Cliente();
 
-            return RedirectToAction("Index", "Cliente");
-        }
-
-
-        [HttpPost]
-        public ActionResult Atualizar(Cliente cliente)
-        {
-            ClienteBL clienteBL = new ClienteBL();
-            clienteBL.Atualizar(cliente);
-
-            return RedirectToAction("Index", "Cliente");
+            using (var httpClient = new HttpClient())
+            {
+                using (var response = await httpClient.GetAsync(apiUrl + "/" + id))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    cliente = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return (IActionResult)View(cliente);
         }
 
         [HttpPost]
-        public ActionResult Excluir(int id)
+        public async Task<IActionResult> AddCliente(Cliente cliente)
         {
-            ClienteBL clienteBL = new ClienteBL();
-            clienteBL.Excluir(id);
+            Cliente cli = new Cliente();
 
-            return RedirectToAction("Index", "Cliente");
+            using (var httpClient = new HttpClient())
+            {
+                StringContent content = new StringContent(JsonConvert.SerializeObject(cliente),
+                                                  Encoding.UTF8, "application/json");
+
+                using (var response = await httpClient.PostAsync(apiUrl, content))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    cli = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return (IActionResult)View(cli);
         }
 
-        public ActionResult Detalhes(int id)
+        [HttpGet]
+        public async Task<IActionResult> UpdateCliente(int id)
         {
-            ClienteBL clienteBL = new ClienteBL();
-            var  clientes  = clienteBL.Obter(id);
-
-            return View(clientes);
+            Cliente cliente = new Cliente();
+            using (var httpClient = new HttpClient())
+            {
+                using (var response = await httpClient.GetAsync(apiUrl + "/" + id))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    cliente = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return (IActionResult)View(cliente);
         }
+        [HttpPost]
+        public async Task<IActionResult> UpdateCliente(Cliente  cliente)
+        {
+            Cliente cli = new Cliente();
 
+            using (var httpClient = new HttpClient())
+            {
+                var content = new MultipartFormDataContent();
+                content.Add(new StringContent(cli.Id.ToString()), "Id");
+                content.Add(new StringContent(cli.Nome), "Nome");
+                content.Add(new DateTime(cli.DataNascimento), "DataNascimento");
+                content.Add(new StringContent(cliente.Cpf), "Cpf");
 
-
+                using (var response = await httpClient.PutAsync(apiUrl, content))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    ViewBag.Result = "Sucesso";
+                    cli = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return (IActionResult)View(cli);
+        }
     }
 }
